@@ -1,3 +1,4 @@
+//导表开始
 
 using System.Collections;
 using System.Collections.Generic;
@@ -18,3 +19,4 @@ public enum Defines
 	L=0X12,//ssssss
 
 }
+//导表结束

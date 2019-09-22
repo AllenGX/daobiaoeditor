@@ -1,4 +1,5 @@
 import p_editor
+import os
 
 
 class BaseEditor:
@@ -10,6 +11,8 @@ class BaseEditor:
         self.Init()
 
     def Init(self):
+        self.m_start = "//导表开始\n"
+        self.m_end = "\n//导表结束\n"
         self.m_rootPath = "../session/"
         self.m_objPath = "Sheet1"
         self.m_definePath = "Sheet2"
@@ -31,16 +34,16 @@ class BaseEditor:
             self.WriteObj(index, sText)
 
     def WriteObj(self, iIndex, sText):
-        with open(self.m_writePath + self.m_objName.lower() + str(iIndex) + ".cs", "w", encoding="utf-8") as f:
-            f.writelines(sText)
+        sFilepath = self.m_writePath + self.m_objName.lower() + str(iIndex) + ".cs"
+        self.Write(sFilepath, sText)
 
     def WriteLoad(self, sText):
-        with open(self.m_writePath + "load.cs", "w", encoding="utf-8") as f:
-            f.writelines(sText)
+        sFilepath = self.m_writePath + "load.cs"
+        self.Write(sFilepath, sText)
 
     def WriteDefine(self, sText):
-        with open(self.m_writePath + "define.cs", "w", encoding="utf-8") as f:
-            f.writelines(sText)
+        sFilepath = self.m_writePath + "define.cs"
+        self.Write(sFilepath, sText)
 
     def GetObjContent(self, iIndex):
         pass
@@ -91,3 +94,27 @@ public class %sFactory
 }
         """ % (sName, sName.lower(), sName, sName, sContent, sName, sName, sName.lower(), sName.lower(), sName.lower())
         return sText
+
+    def Write(self, sFilepath, sText):
+        sText = self.m_start + sText + self.m_end
+        # 不存在直接开搞
+        if not os.path.exists(sFilepath):
+            with open(sFilepath, "w", encoding="utf-8") as f:
+                f.writelines(sText)
+        else:
+            start = 0
+            end = 0
+            with open(sFilepath, 'r', encoding="utf-8") as f:
+                sContent = f.readlines()
+                f.close()
+            for index, line in enumerate(sContent):
+                if "//导表开始" in line:
+                    start = index
+                if "//导表结束" in line:
+                    end = index
+            if start >= end:
+                print("写入失败，头尾标识有误")
+            del sContent[start:end + 1]
+            sContent.insert(start, sText)
+            with open(sFilepath, 'w', encoding="utf-8") as f:
+                f.writelines(sContent)
